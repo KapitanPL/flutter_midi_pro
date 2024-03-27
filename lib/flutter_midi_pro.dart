@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro_platform_interface.dart';
 
@@ -13,9 +14,31 @@ class MidiPro {
   /// Args:
   ///  sf2Path (String): The path to the soundfont file to be loaded.
   /// instrumentIndex (int): The index of the instrument to be loaded. Defaults to 0.
-  Future<Object?> loadSoundfont({required String sf2Path, int instrumentIndex = 0}) async {
+  Future<Object?> loadSoundfontFromFile(
+      {required String sf2Path, int instrumentIndex = 0}) async {
     try {
-      final sf2Data = await rootBundle.load(sf2Path).then((value) => value.buffer.asUint8List());
+      final file = await File(sf2Path).open(mode: FileMode.read);
+
+      final sf2Data = await file.read(await file.length());
+      return FlutterMidiProPlatform.instance
+          .loadSoundfont(sf2Data: sf2Data, instrumentIndex: instrumentIndex)
+          .whenComplete(() => _initialized = true);
+    } catch (e) {
+      throw 'error loading Soundfont: $e';
+    }
+  }
+
+  /// This function loads an instrument in a soundfont file from the given path using the
+  /// FlutterMidiProPlatform.
+  /// Args:
+  ///  sf2Path (String): The path to the soundfont file to be loaded.
+  /// instrumentIndex (int): The index of the instrument to be loaded. Defaults to 0.
+  Future<Object?> loadSoundfontFromAsset(
+      {required String sf2Path, int instrumentIndex = 0}) async {
+    try {
+      final sf2Data = await rootBundle
+          .load(sf2Path)
+          .then((value) => value.buffer.asUint8List());
       return FlutterMidiProPlatform.instance
           .loadSoundfont(sf2Data: sf2Data, instrumentIndex: instrumentIndex)
           .whenComplete(() => _initialized = true);
@@ -33,7 +56,8 @@ class MidiPro {
       throw 'Soundfont not initialized';
     }
     try {
-      return FlutterMidiProPlatform.instance.loadInstrument(instrumentIndex: instrumentIndex);
+      return FlutterMidiProPlatform.instance
+          .loadInstrument(instrumentIndex: instrumentIndex);
     } catch (e) {
       throw 'error loading instrument: $e';
     }
@@ -57,7 +81,8 @@ class MidiPro {
       throw 'Soundfont not initialized';
     }
     try {
-      return FlutterMidiProPlatform.instance.playMidiNote(midi: midi, velocity: velocity);
+      return FlutterMidiProPlatform.instance
+          .playMidiNote(midi: midi, velocity: velocity);
     } catch (e) {
       throw 'error playing midi note: $e';
     }
@@ -80,7 +105,8 @@ class MidiPro {
       throw 'Soundfont not initialized';
     }
     try {
-      return FlutterMidiProPlatform.instance.stopMidiNote(midi: midi, velocity: velocity);
+      return FlutterMidiProPlatform.instance
+          .stopMidiNote(midi: midi, velocity: velocity);
     } catch (e) {
       throw 'error stopping midi note: $e';
     }
