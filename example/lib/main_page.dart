@@ -17,7 +17,9 @@ class _MainPageState extends State<MainPage> {
   final volume = ValueNotifier<int>(127);
   Future loadSoundfont() async {
     await midiPro
-        .loadSoundfont(sf2Path: 'assets/TimGM6mb.sf2', instrumentIndex: instrumentIndex.value)
+        .loadSoundfontFromAsset(
+            sf2Path: 'assets/TimGM6mb.sf2',
+            instrumentIndex: instrumentIndex.value)
         .then((value) => isMidiInitialized.value = true);
   }
 
@@ -106,7 +108,8 @@ class _MainPageState extends State<MainPage> {
                                       loadInstrument();
                                     }
                                   : null,
-                              child: Text('Load Instrument $instrumentIndexValue'));
+                              child: Text(
+                                  'Load Instrument $instrumentIndexValue'));
                         }),
                     const SizedBox(
                       height: 10,
@@ -159,14 +162,18 @@ class _MainPageState extends State<MainPage> {
                           onTapUpdate: (NoteModel? note, int tapId) {
                             if (note == null) return;
                             if (pointerAndNote[tapId] == note) return;
-                            stop(midiIndex: pointerAndNote[tapId]!.midiNoteNumber);
+                            stop(
+                                midiIndex:
+                                    pointerAndNote[tapId]!.midiNoteNumber);
                             play(note.midiNoteNumber, velocity: volume.value);
                             setState(() => pointerAndNote[tapId] = note);
                             debugPrint(
                                 'UPDATE: note= ${note.name + note.octave.toString() + (note.isFlat ? "♭" : '')}, tapId= $tapId');
                           },
                           onTapUp: (int tapId) {
-                            stop(midiIndex: pointerAndNote[tapId]!.midiNoteNumber);
+                            stop(
+                                midiIndex:
+                                    pointerAndNote[tapId]!.midiNoteNumber);
                             setState(() => pointerAndNote.remove(tapId));
                             debugPrint('UP: tapId= $tapId');
                           },
