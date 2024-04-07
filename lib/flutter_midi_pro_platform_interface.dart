@@ -24,7 +24,8 @@ abstract class FlutterMidiProPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<Object?> loadSoundfont({required Uint8List sf2Data, required int instrumentIndex}) async {
+  Future<Object?> loadSoundfont(
+      {required Uint8List sf2Data, required int instrumentIndex}) async {
     throw UnimplementedError('loadSoundfont() has not been implemented.');
   }
 
@@ -32,11 +33,13 @@ abstract class FlutterMidiProPlatform extends PlatformInterface {
     throw UnimplementedError('loadInstrument() has not been implemented.');
   }
 
-  Future<Object?> playMidiNote({required int midi, required int velocity}) async {
+  Future<Object?> playMidiNote(
+      {required int midi, required int velocity}) async {
     throw UnimplementedError('playMidiNote()  has not been implemented.');
   }
 
-  Future<Object?> stopMidiNote({required int midi, required int velocity}) async {
+  Future<Object?> stopMidiNote(
+      {required int midi, required int velocity}) async {
     throw UnimplementedError('stopMidiNote() has not been implemented.');
   }
 
@@ -46,5 +49,9 @@ abstract class FlutterMidiProPlatform extends PlatformInterface {
 
   Future<Object?> dispose() async {
     throw UnimplementedError('dispose() has not been implemented.');
+  }
+
+  Future<List<dynamic>?> listInstruments() async {
+    throw UnimplementedError('ListInstruments() has not been implemented.');
   }
 }

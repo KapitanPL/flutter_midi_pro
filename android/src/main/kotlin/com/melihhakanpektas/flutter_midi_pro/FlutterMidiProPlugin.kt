@@ -10,6 +10,7 @@ import com.melihhakanpektas.midisynthesizer.midi.InvalidMidiDataException
 import com.melihhakanpektas.midisynthesizer.midi.MidiUnavailableException
 import com.melihhakanpektas.midisynthesizer.midi.Receiver
 import com.melihhakanpektas.midisynthesizer.midi.ShortMessage
+import com.melihhakanpektas.midisynthesizer.midi.Soundbank
 import java.io.File
 import java.io.IOException
 import kotlinx.coroutines.*
@@ -20,7 +21,7 @@ class FlutterMidiProPlugin: FlutterPlugin, MethodCallHandler {
   private val synth: SoftSynthesizer = SoftSynthesizer()
   private val recv: Receiver = synth.receiver
   private val msg = ShortMessage()
-  private var sf: SF2Soundbank? = null
+  private var sf: Soundbank? = null
 
   override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, "flutter_midi_pro")
@@ -36,9 +37,15 @@ class FlutterMidiProPlugin: FlutterPlugin, MethodCallHandler {
         val data = arguments!!["sf2Data"] as ByteArray
         val instrumentIndex = arguments["instrumentIndex"] as Int
         try {
-          val file = File.createTempFile("temp", ".sf2")
-          file.writeBytes(data)
-          sf = SF2Soundbank(file)
+          if (data.isEmpty())
+          {
+            sf = synth.getDefaultSoundbank()
+          }
+          else {
+            val file = File.createTempFile("temp", ".sf2")
+            file.writeBytes(data)
+            sf = SF2Soundbank(file)
+          }
           synth.open()
           synth.loadAllInstruments(sf!!)
           synth.channels[0].programChange(instrumentIndex)
@@ -108,6 +115,22 @@ class FlutterMidiProPlugin: FlutterPlugin, MethodCallHandler {
           result.error("STOP_ERROR", "Failed to stop all MIDI notes: ${e.message}", null)
         }
       }
+      "listInstruments" -> {
+        val soundbank = sf 
+        if (soundbank == null) {
+            result.error("NOT_INITIALIZED", "Soundfont is not loaded", null)
+        }
+        else
+        {
+          try {
+            val instruments = soundbank.getInstruments()
+            val instrumentNames = instruments.map { it.name }
+            result.success(instrumentNames)
+          } catch (e: Exception) {
+              result.error("ERROR", "Failed to list instruments: ${e.message}", null)
+          }
+        }
+    }
       "dispose" -> {
         synth.close()
         result.success("Synthesizer disposed")

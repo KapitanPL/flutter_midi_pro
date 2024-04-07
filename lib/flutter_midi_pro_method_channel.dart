@@ -11,24 +11,30 @@ class MethodChannelFlutterMidiPro extends FlutterMidiProPlatform {
   MethodChannel methodChannel = const MethodChannel('flutter_midi_pro');
 
   @override
-  Future<Object?> loadSoundfont({required Uint8List sf2Data, required int instrumentIndex}) async {
-    return methodChannel
-        .invokeMethod('loadSoundfont', {'sf2Data': sf2Data, 'instrumentIndex': instrumentIndex});
+  Future<Object?> loadSoundfont(
+      {required Uint8List sf2Data, required int instrumentIndex}) async {
+    return methodChannel.invokeMethod('loadSoundfont',
+        {'sf2Data': sf2Data, 'instrumentIndex': instrumentIndex});
   }
 
   @override
   Future<Object?> loadInstrument({required int instrumentIndex}) async {
-    return methodChannel.invokeMethod('loadInstrument', {'instrumentIndex': instrumentIndex});
+    return methodChannel
+        .invokeMethod('loadInstrument', {'instrumentIndex': instrumentIndex});
   }
 
   @override
-  Future<Object?> playMidiNote({required int midi, required int velocity}) async {
-    return methodChannel.invokeMethod('playMidiNote', {'note': midi, 'velocity': velocity});
+  Future<Object?> playMidiNote(
+      {required int midi, required int velocity}) async {
+    return methodChannel
+        .invokeMethod('playMidiNote', {'note': midi, 'velocity': velocity});
   }
 
   @override
-  Future<Object?> stopMidiNote({required int midi, required int velocity}) async {
-    return methodChannel.invokeMethod('stopMidiNote', {'note': midi, 'velocity': velocity});
+  Future<Object?> stopMidiNote(
+      {required int midi, required int velocity}) async {
+    return methodChannel
+        .invokeMethod('stopMidiNote', {'note': midi, 'velocity': velocity});
   }
 
   @override
@@ -39,5 +45,10 @@ class MethodChannelFlutterMidiPro extends FlutterMidiProPlatform {
   @override
   Future<Object?> dispose() async {
     return methodChannel.invokeMethod('dispose');
+  }
+
+  @override
+  Future<List<dynamic>?> listInstruments() async {
+    return methodChannel.invokeListMethod('listInstruments');
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro_platform_interface.dart';
@@ -41,6 +42,21 @@ class MidiPro {
           .then((value) => value.buffer.asUint8List());
       return FlutterMidiProPlatform.instance
           .loadSoundfont(sf2Data: sf2Data, instrumentIndex: instrumentIndex)
+          .whenComplete(() => _initialized = true);
+    } catch (e) {
+      throw 'error loading Soundfont: $e';
+    }
+  }
+
+  /// This function loads the default soundbank
+  /// FlutterMidiProPlatform.
+  /// Args:
+  /// instrumentIndex (int): The index of the instrument to be loaded. Defaults to 0.
+  Future<Object?> loadDefaultSoundfont({int instrumentIndex = 0}) async {
+    try {
+      return FlutterMidiProPlatform.instance
+          .loadSoundfont(
+              sf2Data: Uint8List(0), instrumentIndex: instrumentIndex)
           .whenComplete(() => _initialized = true);
     } catch (e) {
       throw 'error loading Soundfont: $e';
@@ -121,6 +137,17 @@ class MidiPro {
       return FlutterMidiProPlatform.instance.stopAllMidiNotes();
     } catch (e) {
       throw 'error stopping all midi notes: $e';
+    }
+  }
+
+  Future<List<dynamic>?> listInstruments() async {
+    if (!_initialized) {
+      throw 'Soundfont not initialized';
+    }
+    try {
+      return FlutterMidiProPlatform.instance.listInstruments();
+    } catch (e) {
+      throw 'error listing instruments: $e';
     }
   }
 
