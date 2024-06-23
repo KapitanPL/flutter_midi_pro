@@ -32,6 +32,10 @@ abstract class FlutterMidiProPlatform extends PlatformInterface {
     throw UnimplementedError('unloadSoundfont() has not been implemented.');
   }
 
+  Future<Map<int, Map<int, String>>> listBanksAndPrograms(int sfId) async {
+    throw UnimplementedError('listBanksAndPrograms has not been implemented.');
+  }
+
   Future<void> dispose() {
     throw UnimplementedError('dispose() has not been implemented.');
   }

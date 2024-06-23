@@ -26,10 +26,11 @@ class MidiPro {
     if (!tempFile.existsSync()) {
       final byteData = await rootBundle.load(path);
       final buffer = byteData.buffer;
-      await tempFile
-          .writeAsBytes(buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
+      await tempFile.writeAsBytes(
+          buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
     }
-    return FlutterMidiProPlatform.instance.loadSoundfont(tempFile.path, resetPresets: resetPresets);
+    return FlutterMidiProPlatform.instance
+        .loadSoundfont(tempFile.path, resetPresets: resetPresets);
   }
 
   /// Selects an instrument on the specified soundfont.
@@ -54,7 +55,12 @@ class MidiPro {
     /// have banks, set this to 0.
     int bank = 0,
   }) async {
-    return FlutterMidiProPlatform.instance.selectInstrument(sfId, channel, bank, program);
+    return FlutterMidiProPlatform.instance
+        .selectInstrument(sfId, channel, bank, program);
+  }
+
+  Future<Map<int, Map<int, String>>> listBanksAndPrograms(int sfId) async {
+    return FlutterMidiProPlatform.instance.listBanksAndPrograms(sfId);
   }
 
   /// Plays a note on the specified channel.
@@ -97,7 +103,8 @@ class MidiPro {
   /// The soundfont ID is the ID returned by the [loadSoundfont] method.
   /// If resetPresets is true, the presets will be reset to the default values.
   Future<void> unloadSoundfont(int sfId, {bool? resetPresets}) async {
-    return FlutterMidiProPlatform.instance.unloadSoundfont(sfId, resetPresets: resetPresets);
+    return FlutterMidiProPlatform.instance
+        .unloadSoundfont(sfId, resetPresets: resetPresets);
   }
 
   /// Disposes of the FlutterMidiPro instance.
