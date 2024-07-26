@@ -21,16 +21,31 @@ class MidiPro {
   /// Loads a soundfont file from the specified path.
   /// Returns the soundfont ID.
   Future<int> loadSoundfont(String path, {bool? resetPresets}) async {
-    final tempDir = await getTemporaryDirectory();
-    final tempFile = File('${tempDir.path}/${path.split('/').last}');
-    if (!tempFile.existsSync()) {
-      final byteData = await rootBundle.load(path);
-      final buffer = byteData.buffer;
-      await tempFile.writeAsBytes(
-          buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
-    }
+    String finalPath = '';
+    if (path.startsWith('assets')) {
+      final tempDir = await getTemporaryDirectory();
+      var tempFile = File('${tempDir.path}/${path.split('/').last}');
+      var prefix = 0;
+      while (tempFile.existsSync()) {
+        tempFile = File('${tempDir.path}/${prefix}_${path.split('/').last}');
+        prefix++;
+      }
+      if (prefix > 0) {
+        print('WARNING: multiple tempfiles exists. This is: $prefix');
+      }
+      if (!tempFile.existsSync()) {
+        final byteData = await rootBundle.load(path);
+        final buffer = byteData.buffer;
+        await tempFile.writeAsBytes(
+            buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
+        finalPath = tempFile.path;
+      }
+    } else if (path.isNotEmpty && path != '/') {
+      finalPath = path;
+    } else {}
+
     return FlutterMidiProPlatform.instance
-        .loadSoundfont(tempFile.path, resetPresets: resetPresets);
+        .loadSoundfont(finalPath, resetPresets: resetPresets);
   }
 
   /// Selects an instrument on the specified soundfont.
