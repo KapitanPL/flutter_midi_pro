@@ -27,6 +27,9 @@ class FlutterMidiProPlugin: FlutterPlugin, MethodCallHandler {
     private external fun stopNote(channel: Int, key: Int)
 
     @JvmStatic
+    private external fun listBanksAndPrograms(sfId: Int): HashMap<Int, HashMap<Int, String>>?
+
+    @JvmStatic
     private external fun unloadSoundfont(sfId: Int, resetPresets: Boolean = false)
     @JvmStatic
     private external fun dispose()
@@ -98,6 +101,16 @@ class FlutterMidiProPlugin: FlutterPlugin, MethodCallHandler {
         dispose()
         result.success(null)
       }
+     "listBanksAndPrograms" -> {
+                val sfId = call.argument<Int>("sfId") ?: 0
+                val mapOfPrograms = listBanksAndPrograms(sfId)
+                val banksAndPrograms = mapOfPrograms?.mapValues { it.value.toMap() }
+                if (banksAndPrograms != null) {
+                    result.success(banksAndPrograms)
+                } else {
+                    result.error("INVALID_ARGUMENT", "Could not retrieve banks and programs", null)
+                }
+            }
       else -> result.notImplemented()
     }
   }

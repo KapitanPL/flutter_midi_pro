@@ -2,6 +2,7 @@
 #include <fluidsynth.h>
 #include <unistd.h>
 #include <map>
+#include <string>
 
 // Global FluidSynth synthesizer instance
 fluid_synth_t* synth = NULL;
@@ -62,4 +63,42 @@ Java_com_melihhakanpektas_flutter_1midi_1pro_FlutterMidiProPlugin_dispose(JNIEnv
     settings = NULL;
     soundfonts.clear();
     isInitialized = false;
+}
+
+extern "C" JNIEXPORT jobject JNICALL
+Java_com_melihhakanpektas_flutter_1midi_1pro_FlutterMidiProPlugin_listBanksAndPrograms(JNIEnv* env, jclass clazz, jint sfId) {
+    fluid_sfont_t* sfont = fluid_synth_get_sfont_by_id(synth, sfId);
+    if (!sfont) {
+        return NULL;
+    }
+
+    std::map<int, std::map<int, std::string>> bankProgramMap;
+    fluid_preset_t* preset = NULL;
+    fluid_sfont_iteration_start(sfont);
+    while ((preset = fluid_sfont_iteration_next(sfont)) != NULL) {
+        int bankNum = fluid_preset_get_banknum(preset);
+        int programNum = fluid_preset_get_num(preset);
+        std::string programName = fluid_preset_get_name(preset);
+        bankProgramMap[bankNum][programNum] = programName;
+    }
+
+    jclass mapClass = env->FindClass("java/util/HashMap");
+    jmethodID mapConstructor = env->GetMethodID(mapClass, "<init>", "()V");
+    jmethodID mapPut = env->GetMethodID(mapClass, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+
+    jobject outerMap = env->NewObject(mapClass, mapConstructor);
+
+    for (const auto& bankEntry : bankProgramMap) {
+        jobject innerMap = env->NewObject(mapClass, mapConstructor);
+        for (const auto& programEntry : bankEntry.second) {
+            jint programNum = programEntry.first;
+            jstring programName = env->NewStringUTF(programEntry.second.c_str());
+            env->CallObjectMethod(innerMap, mapPut, env->NewObject(env->FindClass("java/lang/Integer"), env->GetMethodID(env->FindClass("java/lang/Integer"), "<init>", "(I)V"), programNum), programName);
+            env->DeleteLocalRef(programName);
+        }
+        env->CallObjectMethod(outerMap, mapPut, env->NewObject(env->FindClass("java/lang/Integer"), env->GetMethodID(env->FindClass("java/lang/Integer"), "<init>", "(I)V"), bankEntry.first), innerMap);
+        env->DeleteLocalRef(innerMap);
+    }
+
+    return outerMap;
 }
