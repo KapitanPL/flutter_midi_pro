@@ -49,7 +49,8 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 21
+        targetSdkVersion 36
     }
 
     externalNativeBuild {
