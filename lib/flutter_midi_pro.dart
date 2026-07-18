@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:crypto/crypto.dart';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro_platform_interface.dart';
@@ -17,7 +16,23 @@ import 'package:path_provider/path_provider.dart';
 ///
 /// To dispose of the FlutterMidiPro instance, you can use the [dispose] method.
 class MidiPro {
-  MidiPro();
+  const MidiPro();
+
+  Future<String> ping() async {
+    return FlutterMidiProPlatform.instance.ping();
+  }
+
+  Future<void> loadNativeLibrary() async {
+    return FlutterMidiProPlatform.instance.loadNativeLibrary();
+  }
+
+  Future<String> nativePing() async {
+    return FlutterMidiProPlatform.instance.nativePing();
+  }
+
+  Future<void> init() async {
+    return FlutterMidiProPlatform.instance.init();
+  }
 
   /// Loads a soundfont file from the specified path.
   /// Returns the soundfont ID.
@@ -25,30 +40,20 @@ class MidiPro {
     String finalPath = '';
     if (path.startsWith('assets')) {
       final tempDir = await getTemporaryDirectory();
-      var tempFile = File('${tempDir.path}/${path.split('/').last}');
-      var prefix = 0;
-      final byteData = await rootBundle.load(path);
-      final sourceHash = _computeHash(byteData.buffer.asUint8List());
+      final tempFile = File('${tempDir.path}/${path.split('/').last}');
 
-      while (tempFile.existsSync()) {
-        final existingHash = _computeHash(await tempFile.readAsBytes());
-
-        if (sourceHash == existingHash) {
-          finalPath = tempFile.path;
-          break;
-        } else {
-          prefix++;
-          tempFile = File('${tempDir.path}/${prefix}_${path.split('/').last}');
-        }
+      if (await tempFile.exists() && await tempFile.length() > 0) {
+        finalPath = tempFile.path;
       }
 
       if (finalPath.isEmpty) {
-        if (prefix > 0) {
-          print('WARNING: multiple tempfiles exist. This is: $prefix');
-        }
-        tempFile = File('${tempDir.path}/${prefix}_${path.split('/').last}');
-        await tempFile.writeAsBytes(byteData.buffer
-            .asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
+        final byteData = await rootBundle.load(path);
+        await tempFile.writeAsBytes(
+          byteData.buffer.asUint8List(
+            byteData.offsetInBytes,
+            byteData.lengthInBytes,
+          ),
+        );
         finalPath = tempFile.path;
       }
     } else if (path.isNotEmpty && path != '/') {
@@ -57,11 +62,6 @@ class MidiPro {
 
     return FlutterMidiProPlatform.instance
         .loadSoundfont(finalPath, resetPresets: resetPresets);
-  }
-
-  /// Computes a hash (SHA-256) of the given data
-  String _computeHash(List<int> data) {
-    return sha256.convert(data).toString();
   }
 
   /// Selects an instrument on the specified soundfont.

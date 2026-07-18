@@ -8,6 +8,28 @@ class MethodChannelFlutterMidiPro extends FlutterMidiProPlatform {
   static const MethodChannel _channel = MethodChannel('flutter_midi_pro');
 
   @override
+  Future<String> ping() async {
+    final String response = await _channel.invokeMethod('ping');
+    return response;
+  }
+
+  @override
+  Future<void> loadNativeLibrary() async {
+    await _channel.invokeMethod('loadNativeLibrary');
+  }
+
+  @override
+  Future<String> nativePing() async {
+    final String response = await _channel.invokeMethod('nativePing');
+    return response;
+  }
+
+  @override
+  Future<void> init() async {
+    await _channel.invokeMethod('fluidsynthInit');
+  }
+
+  @override
   Future<int> loadSoundfont(String path, {bool? resetPresets}) async {
     final int sfId = await _channel.invokeMethod(
         'loadSoundfont', {'path': path, 'resetPresets': resetPresets});

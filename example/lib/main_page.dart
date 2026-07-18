@@ -18,8 +18,25 @@ class _MainPageState extends State<MainPage> {
   final bankIndex = ValueNotifier<int>(0);
   final channelIndex = ValueNotifier<int>(0);
   final volume = ValueNotifier<int>(127);
+  final diagnosticStatus = ValueNotifier<String>('Diagnostics ready');
   Map<int, NoteModel> pointerAndNote = {};
   Map<int, Map<int, String>> programs = {};
+
+  Future<void> runDiagnostic(
+    String label,
+    Future<Object?> Function() action,
+  ) async {
+    diagnosticStatus.value = '$label...';
+    try {
+      final result = await action();
+      diagnosticStatus.value = result == null ? '$label OK' : '$label: $result';
+      debugPrint('FlutterMidiPro diagnostic $label OK: $result');
+    } catch (error, stackTrace) {
+      diagnosticStatus.value = '$label failed: $error';
+      debugPrint('FlutterMidiPro diagnostic $label failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    }
+  }
 
   /// Loads a soundfont file from the specified path.
   /// Returns the soundfont ID.
@@ -101,6 +118,51 @@ class _MainPageState extends State<MainPage> {
           children: <Widget>[
             const SizedBox(
               height: 10,
+            ),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ElevatedButton(
+                  onPressed: () => runDiagnostic('ping', midiPro.ping),
+                  child: const Text('Ping'),
+                ),
+                ElevatedButton(
+                  onPressed: () => runDiagnostic(
+                    'load native',
+                    () async {
+                      await midiPro.loadNativeLibrary();
+                      return 'OK';
+                    },
+                  ),
+                  child: const Text('Load Native'),
+                ),
+                ElevatedButton(
+                  onPressed: () =>
+                      runDiagnostic('native ping', midiPro.nativePing),
+                  child: const Text('Native Ping'),
+                ),
+                ElevatedButton(
+                  onPressed: () => runDiagnostic(
+                    'fluidsynthInit',
+                    () async {
+                      await midiPro.init();
+                      return 'OK';
+                    },
+                  ),
+                  child: const Text('FluidSynth Init'),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: ValueListenableBuilder<String>(
+                valueListenable: diagnosticStatus,
+                builder: (context, value, child) {
+                  return Text(value, textAlign: TextAlign.center);
+                },
+              ),
             ),
             ElevatedButton(
                 onPressed: () => loadSoundfont('assets/TimGM6mb.sf2'),

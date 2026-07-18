@@ -12,6 +12,22 @@ abstract class FlutterMidiProPlatform extends PlatformInterface {
     _instance = instance;
   }
 
+  Future<String> ping() {
+    throw UnimplementedError('ping() has not been implemented.');
+  }
+
+  Future<void> loadNativeLibrary() {
+    throw UnimplementedError('loadNativeLibrary() has not been implemented.');
+  }
+
+  Future<String> nativePing() {
+    throw UnimplementedError('nativePing() has not been implemented.');
+  }
+
+  Future<void> init() {
+    throw UnimplementedError('init() has not been implemented.');
+  }
+
   Future<int> loadSoundfont(String path, {bool? resetPresets}) {
     throw UnimplementedError('loadSoundfont() has not been implemented.');
   }

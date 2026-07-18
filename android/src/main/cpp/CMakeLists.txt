@@ -8,6 +8,20 @@ cmake_minimum_required(VERSION 3.4.1)
 set(fluidsynth_DIR ${CMAKE_CURRENT_SOURCE_DIR}/fluidsynth)
 # Our code (native-lib.cpp) will be calling fluidsynth functions, so we add the fluidsynth binaries as dependencies of our code.
 
+if(ANDROID_ABI STREQUAL "arm64-v8a" OR ANDROID_ABI STREQUAL "x86_64")
+    add_library(libc++_shared SHARED IMPORTED)
+    set_target_properties(libc++_shared PROPERTIES IMPORTED_LOCATION ${fluidsynth_DIR}/lib/${ANDROID_ABI}/libc++_shared.so)
+
+    add_library(libfluidsynth SHARED IMPORTED)
+    set_target_properties(libfluidsynth PROPERTIES IMPORTED_LOCATION ${fluidsynth_DIR}/lib/${ANDROID_ABI}/libfluidsynth.so)
+
+    add_library(native-lib SHARED native-lib.cpp)
+    target_include_directories(native-lib PRIVATE ${fluidsynth_DIR}/include)
+    target_link_options(native-lib PRIVATE "-Wl,-z,max-page-size=16384")
+    target_link_libraries(native-lib libfluidsynth libc++_shared android log OpenSLES)
+    return()
+endif()
+
 add_library(libc++_shared SHARED IMPORTED)
 set_target_properties(libc++_shared PROPERTIES IMPORTED_LOCATION ${fluidsynth_DIR}/lib/${ANDROID_ABI}/libc++_shared.so)
 
@@ -73,6 +87,8 @@ add_library(native-lib SHARED native-lib.cpp)
 
 # Specifies the directory where the C or C++ source coude will look the #include <yourlibrary.h> header files
 target_include_directories(native-lib PRIVATE ${fluidsynth_DIR}/include)
+
+target_link_options(native-lib PRIVATE "-Wl,-z,max-page-size=16384")
 
 # Link everything alltogether. Notice that native-lib should be the first element in the list.
 target_link_libraries(
